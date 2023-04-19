@@ -1,5 +1,9 @@
 package com.example.myopencvapp
 
+import android.app.Activity
+import android.app.Dialog
+import android.content.Context
+import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.drawable.BitmapDrawable
 import android.net.Uri
@@ -9,13 +13,12 @@ import android.os.Looper
 import android.provider.MediaStore
 import android.util.Base64
 import android.util.Log
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
+import android.view.*
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.Fragment
+import com.example.myopencvapp.databinding.CustomResultDialogBinding
 import com.example.myopencvapp.databinding.FragmentFaceMatchBinding
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -46,84 +49,23 @@ class FaceMatchFragment : Fragment() {
                 val bitmap: Bitmap = MediaStore.Images.Media.getBitmap(
                     context?.contentResolver, Uri.parse(
                         uri.toString()
-                    ))
-                val myImgView = if (baseImage) binding.baseFaceImage else binding.probeFaceImage
-                myImgView.setImageBitmap(bitmap)
-                Log.d(TAG, "Selected URI: $uri")
+                    )
+                )
+                setImageViewBitmapWith(bitmap)
             } else {
                 Log.d(TAG, "No media selected")
             }
         }
 
-
-
-    private fun initialize() {
-        binding.probeFaceButton.setOnClickListener { pickPicture(false)  }
-        binding.baseFaceButton.setOnClickListener { pickPicture(true) }
-        binding.verifyFaceButton.setOnClickListener { verifyFace() }
-    }
-
-    private fun verifyFace() {
-
-        val builder: AlertDialog.Builder? = activity?.let {
-            AlertDialog.Builder(it)
-        }
-
-        if(binding.baseFaceImage.drawable == null || binding.probeFaceImage.drawable == null ){
-//            val builder: AlertDialog.Builder? = activity?.let {
-//                AlertDialog.Builder(it)
-//            }
-
-            builder?.setMessage("Please input both images to be compared")
-                ?.setTitle("Invalid Request")
-
-             builder?.show()
-
-
-            return
-        }
-
-        CoroutineScope(Dispatchers.Default).launch {
-            val result = callFaceMatch()
-
-
-            uiHandler.post {
-
-                builder?.setMessage(getMessageForResult(result))
-                    ?.setTitle("Face Match Result")
-
-
-                builder?.show()
-
+    private var resultLauncher =
+        registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+            if (result.resultCode == Activity.RESULT_OK) {
+                // There are no request codes
+                val data: Intent? = result.data
+                val imageBitmap = data?.extras?.get("data") as Bitmap
+                setImageViewBitmapWith(imageBitmap)
             }
-
         }
-
-    }
-
-    private fun getMessageForResult(result: MatchResult?): String {
-         val str : String
-        if (result != null) {
-            str = when (result.status) {
-                ValidationStatus.MATCH -> {
-                    "Both Faces Match with score ${result.score}"
-                }
-
-                ValidationStatus.NO_MATCH -> {
-                    "Both Faces do not match as score ${result.score} is above threshold"
-                }
-
-                else -> {
-                    "No information"
-                }
-
-            }
-
-            return str
-        }
-
-        return "No information"
-    }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -134,19 +76,111 @@ class FaceMatchFragment : Fragment() {
         return binding.root
     }
 
-    private fun pickPicture(isBaseImage: Boolean) {
 
+    private fun initialize() {
+        binding.probeFaceButton.setOnClickListener { showPictureDialog(false) }
+        binding.baseFaceButton.setOnClickListener { showPictureDialog(true) }
+        binding.verifyFaceButton.setOnClickListener { verifyFace() }
+    }
+
+
+    private fun showPictureDialog(isBaseImage: Boolean) {
         baseImage = isBaseImage
 
+        val pictureDialog = AlertDialog.Builder(requireContext())
+        pictureDialog.setTitle("Select Action")
+        val pictureDialogItems = arrayOf("Select photo from gallery", "Capture photo from camera")
+        pictureDialog.setItems(
+            pictureDialogItems
+        ) { _, which ->
+            when (which) {
+                0 -> pickPicture()
+                1 -> takePhotoFromCamera()
+            }
+        }
+        pictureDialog.show()
+    }
+
+    private fun setImageViewBitmapWith(bitmap: Bitmap) {
+        val myImgView = if (baseImage) binding.baseFaceImage else binding.probeFaceImage
+        myImgView.setImageBitmap(bitmap)
+    }
+
+
+    private fun takePhotoFromCamera() {
+        val takePictureIntent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
+
+        resultLauncher.launch(takePictureIntent)
+    }
+
+
+    private fun verifyFace() {
+
+        if (binding.baseFaceImage.drawable == null || binding.probeFaceImage.drawable == null) {
+            val builder: AlertDialog.Builder? = activity?.let {
+                AlertDialog.Builder(it)
+            }
+
+            builder?.setMessage("Please input both images to be compared")
+                ?.setTitle("Invalid Request")
+
+            builder?.show()
+
+
+            return
+        }
+
+        CoroutineScope(Dispatchers.Default).launch {
+            val result = callFaceMatch()
+            val (status, score, percentage) = getDetailsOfResult(result)
+
+            uiHandler.post {
+
+                val builder = activity?.let {
+                    CustomDialogClass(it, status, score, percentage)
+                }
+
+
+                builder?.show()
+            }
+        }
+    }
+
+    private fun getDetailsOfResult(result: MatchResult?): Triple<String, Float, Float> {
+        val status: String
+        val score: Float
+        val percentage: Float
+
+        if (result != null) {
+            score = result.score
+            percentage = calcPercentage(result.score)
+            status = result.status.toString()
+        } else {
+            status = "None"
+            score = 0f
+            percentage = 0f
+        }
+
+
+        return Triple(status, score, percentage)
+    }
+
+    private fun calcPercentage(score: Float): Float {
+        return 1 / (1 + score) * 100
+    }
+
+
+    private fun pickPicture() {
         // Launch the photo picker and let the user choose only images.
         try {
-            pickMediaLauncher.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
+
+            val pickPictureRequest =
+                PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
+            pickMediaLauncher.launch(pickPictureRequest)
 
         } catch (e: Exception) {
             Log.e(TAG, e.toString())
         }
-
-
 
 
     }
@@ -179,6 +213,44 @@ class FaceMatchFragment : Fragment() {
         val image: ByteArray = baseStream.toByteArray()
         val imageProbe: ByteArray = probeStream.toByteArray()
         return Pair(image, imageProbe)
+    }
+
+
+}
+
+
+class CustomDialogClass(
+    context: Context,
+    private var status: String,
+    private var score: Float,
+    private var percentage: Float,
+) : Dialog(context) {
+
+    private lateinit var binding: CustomResultDialogBinding
+
+    init {
+        setCancelable(false)
+
+    }
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        requestWindowFeature(Window.FEATURE_NO_TITLE)
+        binding = CustomResultDialogBinding.inflate(layoutInflater)
+        val view = binding.root
+        binding.matchPercentageValue.text = percentage.toString()
+        binding.matchScoreValue.text = score.toString()
+        binding.matchResultValue.text = status
+        setContentView(view)
+        val lp: WindowManager.LayoutParams = WindowManager.LayoutParams()
+        lp.copyFrom(window?.attributes)
+        lp.width = WindowManager.LayoutParams.MATCH_PARENT
+        lp.height = WindowManager.LayoutParams.WRAP_CONTENT
+        lp.gravity = Gravity.CENTER
+
+        window?.attributes = lp
+
+        binding.btnClose.setOnClickListener { dismiss() }
     }
 
 

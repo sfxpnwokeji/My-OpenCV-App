@@ -9,4 +9,10 @@
     <string name="verify_face_button_text">Verify Face</string>
     <string name="pick_an_image">Pick an image</string>
     <string name="match_face_title">Match Faces</string>
+    <string name="close">Close</string>
+    <string name="match_none">None</string>
+    <string name="match_percentage_label">Percentage</string>
+    <string name="match_score_label">Score</string>
+    <string name="match_result_label">Result</string>
+    <string name="match_result_heading">Match Results</string>
 </resources>

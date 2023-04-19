@@ -2,25 +2,19 @@ package com.example.myopencvapp
 
 import android.content.Context
 import android.os.*
-import android.util.Log
 import android.view.MotionEvent
 import android.view.inputmethod.InputMethodManager
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import com.example.myopencvapp.databinding.ActivityMainBinding
 import com.google.android.material.bottomnavigation.BottomNavigationView
-import com.seamfix.sdk.FaceMatch
 
 
 class MainActivity : AppCompatActivity() {
-    companion object {
-        const val TAG = "MainActivity"
-    }
 
 
     private lateinit var binding: ActivityMainBinding
-    private lateinit var bottomNav : BottomNavigationView
-
+    private lateinit var bottomNav: BottomNavigationView
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -31,7 +25,6 @@ class MainActivity : AppCompatActivity() {
         loadFragment(HomeFragment())
         bottomNav = binding.bottomNav
         initialize()
-        Log.i(TAG, FaceMatch().intMethod(23).toString())
 
     }
 
@@ -65,9 +58,9 @@ class MainActivity : AppCompatActivity() {
     }
 
 
-    private  fun loadFragment(fragment: Fragment){
+    private fun loadFragment(fragment: Fragment) {
         val transaction = supportFragmentManager.beginTransaction()
-        transaction.replace(R.id.container,fragment)
+        transaction.replace(R.id.container, fragment)
         transaction.commit()
     }
 
