@@ -1,6 +1,6 @@
 # My-OpenCV-App.
 
-A introductory project into working with .so files and opencv module in android 
+An introductory project into working with .so files and opencv module in android 
 
 This project implements face matching between two faces selected 
 
