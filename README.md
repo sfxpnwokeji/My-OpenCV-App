@@ -11,6 +11,6 @@ Visit [here](https://www.quora.com) for guide to importing opencv into android p
 
 copy the .so files needed into the jniLibs folder of the facematcher module
 
-** The jniLibs zip file for the project can be found [here](https://www.quora.com)
+**The jniLibs zip file for the project can be found [here](https://www.quora.com)**
 
 Extract and copy the jniLibs folder into facematcher/src/main/ of the project.
