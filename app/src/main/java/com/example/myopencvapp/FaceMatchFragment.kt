@@ -113,6 +113,20 @@ class FaceMatchFragment : Fragment() {
         resultLauncher.launch(takePictureIntent)
     }
 
+    private fun pickPicture() {
+        // Launch the photo picker and let the user choose only images.
+        try {
+
+            val pickPictureRequest =
+                PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
+            pickMediaLauncher.launch(pickPictureRequest)
+
+        } catch (e: Exception) {
+            Log.e(TAG, e.toString())
+        }
+
+    }
+
 
     private fun verifyFace() {
 
@@ -125,7 +139,6 @@ class FaceMatchFragment : Fragment() {
                 ?.setTitle("Invalid Request")
 
             builder?.show()
-
 
             return
         }
@@ -154,7 +167,7 @@ class FaceMatchFragment : Fragment() {
         if (result != null) {
             score = result.score
             percentage = calcPercentage(result.score)
-            status = result.status.toString()
+            status = result.status.toString().replace("_", " ")
         } else {
             status = "None"
             score = 0f
@@ -167,22 +180,6 @@ class FaceMatchFragment : Fragment() {
 
     private fun calcPercentage(score: Float): Float {
         return 1 / (1 + score) * 100
-    }
-
-
-    private fun pickPicture() {
-        // Launch the photo picker and let the user choose only images.
-        try {
-
-            val pickPictureRequest =
-                PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
-            pickMediaLauncher.launch(pickPictureRequest)
-
-        } catch (e: Exception) {
-            Log.e(TAG, e.toString())
-        }
-
-
     }
 
 
