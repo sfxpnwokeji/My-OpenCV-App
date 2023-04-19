@@ -12,6 +12,6 @@ This project implements face matching between two faces selected
 
 - Copy the .so files needed into the jniLibs folder of the facematcher module
 
-    **The jniLibs zip file for the project can be found [here](https://drive.google.com/file/d/1TykodIoRhs1YQtUEst0Us6nsF8Bu4jpC/view?usp=share_link)**
+    **The jniLibs zip file for the project can be found [here](https://drive.google.com/file/d/1d1SoH60kZI6b30OfR0soSLCjL6k1GNsr/view?usp=sharing)**
 
     Extract and copy the jniLibs folder into facematcher/src/main/ of the project.
