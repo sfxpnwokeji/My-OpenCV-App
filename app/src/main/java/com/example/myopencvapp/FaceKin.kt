@@ -97,8 +97,8 @@ class FaceKin(context: Context) {
             inputImageBuffer.load(datum, imageShape)
             val imageProcessor: ImageProcessor = ImageProcessor.Builder().build()
             inputImageBuffer = imageProcessor.process(inputImageBuffer)
-            tflite.run(inputImageBuffer.getBuffer(), outputProbabilityBuffer.getBuffer().rewind())
-            val processed: FloatArray = outputProbabilityBuffer.getFloatArray()
+            tflite.run(inputImageBuffer.buffer, outputProbabilityBuffer.buffer.rewind())
+            val processed: FloatArray = outputProbabilityBuffer.floatArray
             out.add(processed)
         }
         outFloat = out.toTypedArray()
