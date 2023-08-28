@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">My OpenCV App</string>
+    <string name="app_name">FACE MATCH APP</string>
     <string name="open_camera">Open Camera</string>
     <string name="name_hint">Name of image</string>
     <string name="submit_text">Submit</string>
