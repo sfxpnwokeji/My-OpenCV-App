@@ -167,7 +167,7 @@ class FaceMatchFragment : Fragment() {
         if (result != null) {
             score = result.score
             percentage = calcPercentage(result.score)
-            status = result.status.toString().replace("_", " ")
+            status = result.status.description
         } else {
             status = "None"
             score = 0f
@@ -189,7 +189,7 @@ class FaceMatchFragment : Fragment() {
             val imageString = Base64.encodeToString(image, Base64.NO_WRAP)
             val imageStringProbe = Base64.encodeToString(imageProbe, Base64.NO_WRAP)
             val faceKin = FaceKin(requireContext())
-            val result = faceKin.verify(imageString, imageStringProbe, 0.2f)
+            val result = faceKin.verify(imageString, imageStringProbe, 0.9f)
             Log.i(TAG, result.score.toString())
             Log.i(TAG, result.status.toString())
             faceKin.release()

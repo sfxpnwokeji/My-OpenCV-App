@@ -14,7 +14,6 @@ class MainActivity : AppCompatActivity() {
 
 
     private lateinit var binding: ActivityMainBinding
-    private lateinit var bottomNav: BottomNavigationView
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -22,9 +21,7 @@ class MainActivity : AppCompatActivity() {
         binding = ActivityMainBinding.inflate(layoutInflater)
         val view = binding.root
         setContentView(view)
-        loadFragment(HomeFragment())
-        bottomNav = binding.bottomNav
-        initialize()
+        loadFragment(FaceMatchFragment())
 
     }
 
@@ -37,25 +34,25 @@ class MainActivity : AppCompatActivity() {
         return super.dispatchTouchEvent(ev)
     }
 
-    private fun initialize() {
-        bottomNav.setOnItemSelectedListener {
-            when (it.itemId) {
-                (R.id.home_icon) -> {
-                    loadFragment(HomeFragment())
-                    true
-                }
-
-                (R.id.face_icon) -> {
-                    loadFragment(FaceMatchFragment())
-                    true
-                }
-                else -> {
-                    loadFragment(HomeFragment())
-                    true
-                }
-            }
-        }
-    }
+//    private fun initialize() {
+//        bottomNav.setOnItemSelectedListener {
+//            when (it.itemId) {
+//                (R.id.home_icon) -> {
+//                    loadFragment(HomeFragment())
+//                    true
+//                }
+//
+//                (R.id.face_icon) -> {
+//                    loadFragment(FaceMatchFragment())
+//                    true
+//                }
+//                else -> {
+//                    loadFragment(HomeFragment())
+//                    true
+//                }
+//            }
+//        }
+//    }
 
 
     private fun loadFragment(fragment: Fragment) {

@@ -15,4 +15,4 @@ dependencyResolutionManagement {
 rootProject.name = "My OpenCV App"
 include ':app'
 include ':facematcher'
-include ':opencv-sdk'
+//include ':opencv-sdk'
