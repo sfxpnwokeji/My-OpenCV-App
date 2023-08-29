@@ -129,9 +129,17 @@ class FaceMatchFragment : Fragment() {
     private fun verifyFace() {
 
         binding.progressBar.visibility = View.VISIBLE
+        val placeholderConstantState = resources.getDrawable(R.drawable.face, null).constantState
 
 
-        if (binding.displaySourceImage.drawable == null || binding.displayTargetImage.drawable == null) {
+
+        val sourceResource = binding.displaySourceImage.drawable.constantState
+        val targetResource = binding.displayTargetImage.drawable.constantState
+
+
+
+
+        if (binding.displaySourceImage.drawable == null || sourceResource == placeholderConstantState || binding.displayTargetImage.drawable == null || targetResource == placeholderConstantState ) {
             val builder: AlertDialog.Builder? = activity?.let {
                 AlertDialog.Builder(it)
 
