@@ -1,8 +1,6 @@
 package com.example.myopencvapp
 
 import android.app.Activity
-import android.app.Dialog
-import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.drawable.BitmapDrawable
@@ -18,7 +16,6 @@ import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.Fragment
-import com.example.myopencvapp.databinding.CustomResultDialogBinding
 import com.example.myopencvapp.databinding.FragmentFaceMatchBinding
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -37,7 +34,8 @@ class FaceMatchFragment : Fragment() {
     }
 
     private lateinit var binding: FragmentFaceMatchBinding
-    private var baseImage by Delegates.notNull<Boolean>()
+    private var sourceImage by Delegates.notNull<Boolean>()
+
 
     private val uiHandler = Handler(Looper.getMainLooper())
 
@@ -78,14 +76,14 @@ class FaceMatchFragment : Fragment() {
 
 
     private fun initialize() {
-        binding.probeFaceButton.setOnClickListener { showPictureDialog(false) }
-        binding.baseFaceButton.setOnClickListener { showPictureDialog(true) }
-        binding.verifyFaceButton.setOnClickListener { verifyFace() }
+        binding.btnInputTargetImage.setOnClickListener { showPictureDialog(false) }
+        binding.btnInputSourceImage.setOnClickListener { showPictureDialog(true) }
+        binding.btnMatchFaces.setOnClickListener { verifyFace() }
     }
 
 
-    private fun showPictureDialog(isBaseImage: Boolean) {
-        baseImage = isBaseImage
+    private fun showPictureDialog(isSourceImage: Boolean) {
+        sourceImage = isSourceImage
 
         val pictureDialog = AlertDialog.Builder(requireContext())
         pictureDialog.setTitle("Select Action")
@@ -102,7 +100,7 @@ class FaceMatchFragment : Fragment() {
     }
 
     private fun setImageViewBitmapWith(bitmap: Bitmap) {
-        val myImgView = if (baseImage) binding.baseFaceImage else binding.probeFaceImage
+        val myImgView = if (sourceImage) binding.displaySourceImage else binding.displayTargetImage
         myImgView.setImageBitmap(bitmap)
     }
 
@@ -130,9 +128,13 @@ class FaceMatchFragment : Fragment() {
 
     private fun verifyFace() {
 
-        if (binding.baseFaceImage.drawable == null || binding.probeFaceImage.drawable == null) {
+        binding.progressBar.visibility = View.VISIBLE
+
+
+        if (binding.displaySourceImage.drawable == null || binding.displayTargetImage.drawable == null) {
             val builder: AlertDialog.Builder? = activity?.let {
                 AlertDialog.Builder(it)
+
             }
 
             builder?.setMessage("Please input both images to be compared")
@@ -140,21 +142,25 @@ class FaceMatchFragment : Fragment() {
 
             builder?.show()
 
+            binding.progressBar.visibility = View.GONE
+
             return
         }
 
         CoroutineScope(Dispatchers.Default).launch {
+            val startTime = System.currentTimeMillis()
             val result = callFaceMatch()
+            val endTime = System.currentTimeMillis()
             val (status, score, percentage) = getDetailsOfResult(result)
+            val processTime = "${endTime - startTime} ms"
+
 
             uiHandler.post {
-
-                val builder = activity?.let {
-                    CustomDialogClass(it, status, score, percentage)
-                }
-
-
-                builder?.show()
+                binding.progressBar.visibility = View.GONE
+                binding.matchResult.text = status
+                binding.percentage.text = percentage.toString()
+                binding.matchScore.text = score.toString()
+                binding.processingTime.text = processTime
             }
         }
     }
@@ -201,8 +207,8 @@ class FaceMatchFragment : Fragment() {
     }
 
     private fun getByteArrayPair(): Pair<ByteArray, ByteArray> {
-        val baseImageBitmap = (binding.baseFaceImage.drawable as BitmapDrawable).bitmap
-        val probeImageBitmap = (binding.probeFaceImage.drawable as BitmapDrawable).bitmap
+        val baseImageBitmap = (binding.displaySourceImage.drawable as BitmapDrawable).bitmap
+        val probeImageBitmap = (binding.displayTargetImage.drawable as BitmapDrawable).bitmap
         val baseStream = ByteArrayOutputStream()
         val probeStream = ByteArrayOutputStream()
         baseImageBitmap.compress(Bitmap.CompressFormat.PNG, 100, baseStream)
@@ -210,44 +216,6 @@ class FaceMatchFragment : Fragment() {
         val image: ByteArray = baseStream.toByteArray()
         val imageProbe: ByteArray = probeStream.toByteArray()
         return Pair(image, imageProbe)
-    }
-
-
-}
-
-
-class CustomDialogClass(
-    context: Context,
-    private var status: String,
-    private var score: Float,
-    private var percentage: Float,
-) : Dialog(context) {
-
-    private lateinit var binding: CustomResultDialogBinding
-
-    init {
-        setCancelable(false)
-
-    }
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        requestWindowFeature(Window.FEATURE_NO_TITLE)
-        binding = CustomResultDialogBinding.inflate(layoutInflater)
-        val view = binding.root
-        binding.matchPercentageValue.text = percentage.toString()
-        binding.matchScoreValue.text = score.toString()
-        binding.matchResultValue.text = status
-        setContentView(view)
-        val lp: WindowManager.LayoutParams = WindowManager.LayoutParams()
-        lp.copyFrom(window?.attributes)
-        lp.width = WindowManager.LayoutParams.MATCH_PARENT
-        lp.height = WindowManager.LayoutParams.WRAP_CONTENT
-        lp.gravity = Gravity.CENTER
-
-        window?.attributes = lp
-
-        binding.btnClose.setOnClickListener { dismiss() }
     }
 
 
