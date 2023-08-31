@@ -125,7 +125,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:orientation="vertical"
-                    app:layout_constraintGuide_end="200dp" />
+                    app:layout_constraintGuide_end="206dp" />
 
             <TextView
                     android:id="@+id/match_result"

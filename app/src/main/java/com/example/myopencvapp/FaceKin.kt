@@ -17,7 +17,7 @@ class FaceKin(context: Context) {
     /**
      * Tf lite interpreter instance
      */
-     private lateinit var tflite: Interpreter
+    private lateinit var tflite: Interpreter
 
     /**
      * File directory for models
@@ -71,9 +71,27 @@ class FaceKin(context: Context) {
         val preprocessResult: PreprocessResult = Gson().fromJson(data, PreprocessResult::class.java)
         if (preprocessResult.code != 0) {
             return when (preprocessResult.code) {
-                -1 -> MatchResult(-1f, ValidationStatus.NO_FACE_FOUND)
-                -2 -> MatchResult(-1f, ValidationStatus.MULTI_FACE_FOUND)
-                -3 -> MatchResult(-1f, ValidationStatus.FACE_OUT_OF_BOX)
+                -1 -> {
+                    if (preprocessResult.status!!.contains("source", true)) MatchResult(
+                        -1f,
+                        ValidationStatus.NO_FACE_FOUND_SOURCE
+                    ) else MatchResult(-1f, ValidationStatus.NO_FACE_FOUND_TARGET)
+                }
+
+                -2 -> {
+                    if (preprocessResult.status!!.contains("source", true)) MatchResult(
+                        -1f,
+                        ValidationStatus.MULTI_FACE_FOUND_SOURCE
+                    ) else MatchResult(-1f, ValidationStatus.MULTI_FACE_FOUND_TARGET)
+                }
+
+                -3 -> {
+                    if (preprocessResult.status!!.contains("source", true)) MatchResult(
+                        -1f,
+                        ValidationStatus.FACE_OUT_OF_BOX_SOURCE
+                    ) else MatchResult(-1f, ValidationStatus.FACE_OUT_OF_BOX_TARGET)
+                }
+
                 else -> MatchResult(-1f, ValidationStatus.IMAGE_PROCESSING_FAILED)
             }
 

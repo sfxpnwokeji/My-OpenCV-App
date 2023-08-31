@@ -13,7 +13,7 @@ class FaceMatch {
 
         // Used to load the 'sdk' library on application startup.
         init {
-            System.loadLibrary("mynative")
+            System.loadLibrary("native-face-match")
         }
 
     }
